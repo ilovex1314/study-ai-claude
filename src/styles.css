@@ -278,13 +278,10 @@ button { font-family: inherit; }
 .architecture-canvas { position: relative; width: 100%; }
 .architecture-connectors { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; z-index: 2; }
 .architecture-connectors path { fill: none; stroke: var(--line-strong); stroke-width: 1.5; }
-.architecture-connectors marker path { fill: var(--line-strong); stroke: none; }
+.architecture-connectors marker path { stroke: none; }
 .architecture-connector[data-relation="feedback"] path { stroke: var(--accent); stroke-dasharray: 5 4; }
-.architecture-connector[data-relation="feedback"] marker path { fill: var(--accent); }
 .architecture-connector[data-relation="guard"] path,
 .architecture-connector[data-relation="branch"] path { stroke: var(--bad); }
-.architecture-connector[data-relation="guard"] marker path,
-.architecture-connector[data-relation="branch"] marker path { fill: var(--bad); }
 .architecture-connector[data-relation="dependency"] path { stroke-dasharray: 2 3; }
 .architecture-connectors text { fill: var(--muted); font-size: 11px; }
 .architecture-node-list { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; justify-content: space-around; }

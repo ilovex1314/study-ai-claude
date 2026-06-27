@@ -13,6 +13,7 @@ type ConnectorPath = {
   labelX: number;
   labelY: number;
   path: string;
+  anchor?: "start" | "middle";
 };
 
 function groupNodes(nodes: ArchNode[], groups: ArchGroup[] = []) {
@@ -31,43 +32,67 @@ function NodeView({ node }: { node: ArchNode }) {
   );
 }
 
-function edgePath(edge: ArchEdge, from: DOMRect, to: DOMRect, canvas: DOMRect) {
-  const startX = from.left - canvas.left + from.width / 2;
-  const startY = from.top - canvas.top + from.height / 2;
-  const endX = to.left - canvas.left + to.width / 2;
-  const endY = to.top - canvas.top + to.height / 2;
-  const midX = (startX + endX) / 2;
-  const midY = (startY + endY) / 2;
+// Point on a node's border in the direction of (towardX, towardY) from its center.
+// Clipping endpoints to the border keeps the arrowhead visible at the node edge
+// instead of buried under the node box (which sits above the connector layer).
+function borderPoint(cx: number, cy: number, hw: number, hh: number, towardX: number, towardY: number) {
+  const dx = towardX - cx;
+  const dy = towardY - cy;
+  if (dx === 0 && dy === 0) return { x: cx, y: cy };
+  const sx = dx !== 0 ? hw / Math.abs(dx) : Infinity;
+  const sy = dy !== 0 ? hh / Math.abs(dy) : Infinity;
+  const s = Math.min(sx, sy);
+  return { x: cx + dx * s, y: cy + dy * s };
+}
 
-  if (edge.relation === "feedback" || edge.relation === "dependency") {
-    const lift = Math.max(34, Math.abs(startX - endX) * 0.16);
-    return {
-      labelX: midX,
-      labelY: Math.min(startY, endY) - lift - 6,
-      path: `M ${startX} ${startY} C ${startX} ${startY - lift}, ${endX} ${endY - lift}, ${endX} ${endY}`
-    };
+function edgePath(edge: ArchEdge, from: DOMRect, to: DOMRect, canvas: DOMRect, allowGutter: boolean): Omit<ConnectorPath, "edge"> {
+  const fx = from.left - canvas.left;
+  const fy = from.top - canvas.top;
+  const tx = to.left - canvas.left;
+  const ty = to.top - canvas.top;
+  const fcx = fx + from.width / 2;
+  const fcy = fy + from.height / 2;
+  const tcx = tx + to.width / 2;
+  const tcy = ty + to.height / 2;
+  const span = Math.abs(fcy - tcy);
+
+  // Long feedback / dependency edges route around the left gutter rather than
+  // cutting diagonally across every layer.
+  const routeAround = allowGutter && (edge.relation === "feedback" || edge.relation === "dependency") && span > 160;
+  if (routeAround) {
+    const gutter = 6;
+    const r = 10;
+    const startX = fx - 4;
+    const startY = fcy;
+    const endX = tx - 4;
+    const endY = tcy;
+    const dir = endY < startY ? -1 : 1;
+    const path =
+      `M ${startX} ${startY} L ${gutter + r} ${startY} ` +
+      `Q ${gutter} ${startY} ${gutter} ${startY + dir * r} ` +
+      `L ${gutter} ${endY - dir * r} ` +
+      `Q ${gutter} ${endY} ${gutter + r} ${endY} ` +
+      `L ${endX} ${endY}`;
+    return { labelX: gutter + 6, labelY: (startY + endY) / 2, path, anchor: "start" };
   }
+
+  const start = borderPoint(fcx, fcy, from.width / 2, from.height / 2, tcx, tcy);
+  const end = borderPoint(tcx, tcy, to.width / 2, to.height / 2, fcx, fcy);
+  const midX = (start.x + end.x) / 2;
+  const midY = (start.y + end.y) / 2;
 
   if (edge.relation === "branch" || edge.relation === "guard") {
-    const offset = Math.max(18, Math.abs(startY - endY) * 0.18);
-    return {
-      labelX: midX,
-      labelY: midY - offset,
-      path: `M ${startX} ${startY} Q ${midX} ${midY - offset * 2}, ${endX} ${endY}`
-    };
+    const offset = Math.max(16, Math.abs(start.y - end.y) * 0.18);
+    return { labelX: midX, labelY: midY - offset, path: `M ${start.x} ${start.y} Q ${midX} ${midY - offset * 2}, ${end.x} ${end.y}` };
   }
 
-  return {
-    labelX: midX,
-    labelY: midY - 8,
-    path: `M ${startX} ${startY} L ${endX} ${endY}`
-  };
+  return { labelX: midX, labelY: midY - 8, path: `M ${start.x} ${start.y} L ${end.x} ${end.y}` };
 }
 
 function ConnectorLayer({ edges, nodes, paths, width, height }: { edges: ArchEdge[]; nodes: ArchNode[]; paths: ConnectorPath[]; width: number; height: number }) {
   const markerSeed = useId().replace(/:/g, "");
   const labelFor = (id: string) => nodes.find((node) => node.id === id)?.label ?? id;
-  const fallbackPaths = useMemo(
+  const fallbackPaths = useMemo<ConnectorPath[]>(
     () =>
       edges.map((edge, index) => ({
         edge,
@@ -86,11 +111,11 @@ function ConnectorLayer({ edges, nodes, paths, width, height }: { edges: ArchEdg
   return (
     <svg className="architecture-connectors" viewBox={`0 0 ${viewWidth} ${viewHeight}`} preserveAspectRatio="none" aria-hidden="true">
       <defs>
-        <marker id={`${markerSeed}-arrow`} markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth">
-          <path d="M 0 0 L 9 4.5 L 0 9 z" />
+        <marker id={`${markerSeed}-arrow`} markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth">
+          <path d="M 0 0 L 8 4 L 0 8 z" fill="context-stroke" />
         </marker>
       </defs>
-      {visiblePaths.map(({ edge, labelX, labelY, path }, index) => (
+      {visiblePaths.map(({ edge, labelX, labelY, path, anchor }, index) => (
         <g
           key={`${edge.from}-${edge.to}-${edge.label ?? ""}-${index}`}
           className="architecture-connector"
@@ -101,7 +126,7 @@ function ConnectorLayer({ edges, nodes, paths, width, height }: { edges: ArchEdg
         >
           <path d={path} markerEnd={`url(#${markerSeed}-arrow)`} />
           {edge.label && paths.length > 0 ? (
-            <text x={labelX} y={Math.max(14, labelY)} textAnchor="middle">
+            <text x={labelX} y={Math.max(14, labelY)} textAnchor={anchor ?? "middle"}>
               {edge.label}
             </text>
           ) : null}
@@ -111,7 +136,7 @@ function ConnectorLayer({ edges, nodes, paths, width, height }: { edges: ArchEdg
   );
 }
 
-function ArchitectureCanvas({ children, edges = [], nodes }: { children: ReactNode; edges?: ArchEdge[]; nodes: ArchNode[] }) {
+function ArchitectureCanvas({ children, edges = [], nodes, allowGutter = false }: { children: ReactNode; edges?: ArchEdge[]; nodes: ArchNode[]; allowGutter?: boolean }) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [layout, setLayout] = useState<{ height: number; paths: ConnectorPath[]; width: number }>({ height: 0, paths: [], width: 0 });
 
@@ -125,7 +150,7 @@ function ArchitectureCanvas({ children, edges = [], nodes }: { children: ReactNo
         const from = canvas.querySelector<HTMLElement>(`[data-node-id="${edge.from}"]`);
         const to = canvas.querySelector<HTMLElement>(`[data-node-id="${edge.to}"]`);
         if (!from || !to) return [];
-        return [{ edge, ...edgePath(edge, from.getBoundingClientRect(), to.getBoundingClientRect(), canvasRect) }];
+        return [{ edge, ...edgePath(edge, from.getBoundingClientRect(), to.getBoundingClientRect(), canvasRect, allowGutter) }];
       });
 
       setLayout({ height: canvasRect.height, paths, width: canvasRect.width });
@@ -141,7 +166,7 @@ function ArchitectureCanvas({ children, edges = [], nodes }: { children: ReactNo
       observer?.disconnect();
       window.removeEventListener("resize", measure);
     };
-  }, [edges]);
+  }, [edges, allowGutter]);
 
   return (
     <div className="architecture-canvas" ref={canvasRef}>
@@ -155,7 +180,7 @@ function GroupedDiagram({ nodes, groups = [], edges = [] }: { nodes: ArchNode[];
   const grouped = groupNodes(nodes, groups);
   if (grouped.length === 0) {
     return (
-      <ArchitectureCanvas edges={edges} nodes={nodes}>
+      <ArchitectureCanvas edges={edges} nodes={nodes} allowGutter>
         <div className="architecture-node-list">
           {nodes.map((node) => (
             <NodeView key={node.id} node={node} />
@@ -166,7 +191,7 @@ function GroupedDiagram({ nodes, groups = [], edges = [] }: { nodes: ArchNode[];
   }
 
   return (
-    <ArchitectureCanvas edges={edges} nodes={nodes}>
+    <ArchitectureCanvas edges={edges} nodes={nodes} allowGutter>
       <div className="architecture-groups">
         {grouped.map((group) => (
           <section key={group.id} className="architecture-group" data-kind={group.kind ?? "lane"}>
