@@ -105,3 +105,61 @@ body { margin: 0; font-family: system-ui, sans-serif; color: var(--ink); }
   --angle: calc(360deg / var(--loop-count) * var(--slot) - 90deg);
   transform: translate(calc(cos(var(--angle)) * 110px), calc(sin(var(--angle)) * 95px));
 }
+
+/* ── App shell & lesson page ───────────────────────────────── */
+.app-shell { display: flex; gap: 1.5rem; max-width: 1200px; margin: 0 auto; padding: 1.5rem; align-items: flex-start; }
+.app-sidebar { flex: 0 0 240px; position: sticky; top: 1rem; }
+.lesson-page { flex: 1 1 auto; min-width: 0; }
+
+.curriculum-nav ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+.curriculum-nav a { display: flex; flex-direction: column; padding: 0.5rem 0.65rem; border-radius: 8px; text-decoration: none; color: var(--ink); }
+.curriculum-nav a.active { background: #eef3ff; color: var(--accent); }
+.curriculum-nav .nav-phase { font-size: 0.7rem; color: var(--muted); }
+.curriculum-nav .nav-title { font-weight: 600; font-size: 0.85rem; }
+.curriculum-nav .nav-capability { font-size: 0.72rem; color: var(--muted); }
+
+.section-rail { display: flex; gap: 0.5rem; position: sticky; top: 0; background: var(--surface); padding: 0.5rem 0; z-index: 5; border-bottom: 1px solid var(--line); }
+.section-rail a { padding: 0.35rem 0.75rem; border-radius: 999px; text-decoration: none; color: var(--muted); font-size: 0.85rem; }
+.section-rail a.active { background: var(--accent); color: #fff; }
+
+.hero { padding: 1.5rem 0 0.5rem; }
+.hero-eyebrow { color: var(--accent); font-size: 0.8rem; font-weight: 600; margin: 0; }
+.hero-title { margin: 0.25rem 0; font-size: 1.8rem; }
+.hero-capability, .hero-summary { color: var(--ink); }
+.hero-mental-model, .hero-output { display: flex; gap: 0.6rem; align-items: baseline; background: var(--surface-2); border-radius: 10px; padding: 0.6rem 0.85rem; margin: 0.5rem 0; }
+.hero-mental-model p, .hero-output p { margin: 0; }
+.tag { display: inline-block; font-size: 0.68rem; font-weight: 600; color: var(--accent); background: #eef3ff; border-radius: 999px; padding: 0.1rem 0.5rem; margin-right: 0.4rem; white-space: nowrap; }
+
+.concept-card { border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.25rem; margin: 1rem 0; background: var(--surface); }
+.concept-title { margin: 0 0 0.5rem; font-size: 1.15rem; }
+.example-contrast { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+.example { border-radius: 10px; padding: 0.85rem; }
+.example h4 { margin: 0 0 0.5rem; font-size: 0.9rem; }
+.example.good { background: #effaf4; border: 1px solid var(--good); }
+.example.bad { background: #fdf0ef; border: 1px solid var(--bad); }
+.example-context { font-weight: 600; }
+.example-outcome { font-size: 0.85rem; color: var(--muted); }
+.pitfall-list { list-style: none; margin: 0.5rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+.pitfall { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.88rem; }
+
+.decision-layer { border-left: 3px solid var(--accent); padding-left: 0.85rem; margin: 0.85rem 0; }
+.decision-question { color: var(--muted); margin: 0.2rem 0; }
+.decision-choices { margin: 0.3rem 0; padding-left: 1rem; }
+.choice-example { display: inline-block; font-size: 0.78rem; color: var(--muted); margin-left: 0.4rem; font-family: ui-monospace, monospace; }
+
+.question-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1rem; }
+.question-item { border: 1px solid var(--line); border-radius: 10px; padding: 1rem; }
+.question-head { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--muted); }
+.question-weight { font-weight: 600; color: var(--accent); }
+.question-prompt { font-weight: 600; margin: 0.4rem 0; }
+.option-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.option-button { text-align: left; padding: 0.6rem 0.85rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); cursor: pointer; font-size: 0.9rem; }
+.option-button.selected { border-color: var(--accent); }
+.option-button.correct { border-color: var(--good); background: #effaf4; }
+.option-button.wrong { border-color: var(--bad); background: #fdf0ef; }
+.question-explanation { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+.submit-quiz { margin-top: 1rem; padding: 0.6rem 1.2rem; border: none; border-radius: 8px; background: var(--accent); color: #fff; cursor: pointer; }
+.submit-quiz:disabled { background: var(--line); cursor: not-allowed; }
+
+.review-score { font-size: 1.5rem; }
+.review-score strong { color: var(--accent); }
