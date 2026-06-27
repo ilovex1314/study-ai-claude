@@ -1,7 +1,10 @@
 import { buildLessons } from "./generate-content.mjs";
 
-export function validateLessons(lessons) {
+export function validateLessons(lessons, { requireDays } = {}) {
   const errors = [];
+  if (requireDays != null && lessons.length !== requireDays) {
+    errors.push(`expected exactly ${requireDays} day lessons, found ${lessons.length}`);
+  }
   for (const l of lessons) {
     const sum = (l.questions ?? []).reduce((s, q) => s + (q.weight ?? 0), 0);
     if (sum !== 100) errors.push(`${l.id}: question weights sum to ${sum}, expected 100`);
@@ -20,11 +23,12 @@ export function validateLessons(lessons) {
 
 async function main() {
   const lessons = await buildLessons();
-  const ids = lessons.filter((l) => /^day\d{2}$/.test(l.id) && l.id !== "day99");
-  const result = validateLessons(lessons);
-  // Day count check only enforced once fixtures removed (Task 14)
+  const realDays = lessons.filter((l) => /^day\d{2}$/.test(l.id) && l.id !== "day99");
+  const hasFixture = lessons.some((l) => l.id === "day99");
+  // Enforce the 20-day count only once the fixture is removed (real curriculum present).
+  const result = validateLessons(lessons, hasFixture ? {} : { requireDays: 20 });
   if (!result.ok) { console.error("validate-content FAILED:\n" + result.errors.join("\n")); process.exit(1); }
-  console.log(`validate-content: ${ids.length} lessons OK`);
+  console.log(`validate-content: ${realDays.length} lessons OK`);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) main();

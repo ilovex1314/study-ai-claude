@@ -16,7 +16,7 @@ it("renders the first lesson title and its production/counter example contrast",
 
 it("shows each question's weight beside it", () => {
   renderAt(`/${lessons[0].id}/practice`);
-  expect(screen.getByText(/本题 \d+ 分/)).toBeInTheDocument();
+  expect(screen.getAllByText(/本题 \d+ 分/).length).toBe(lessons[0].questions.length);
 });
 
 it("saves practice evidence text to the learner-state adapter", () => {

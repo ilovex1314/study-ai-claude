@@ -17,3 +17,10 @@ it("flags feedback architecture without a feedback edge", () => {
 it("passes a well-formed lesson set", () => {
   expect(validateLessons([base()]).ok).toBe(true);
 });
+
+it("flags a curriculum that is not exactly the required day count", () => {
+  const nineteen = Array.from({ length: 19 }, (_, i) => base({ id: `day${String(i + 1).padStart(2, "0")}` }));
+  const r = validateLessons(nineteen, { requireDays: 20 });
+  expect(r.ok).toBe(false);
+  expect(r.errors.join()).toMatch(/20/);
+});

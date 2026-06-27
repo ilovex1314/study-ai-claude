@@ -1,0 +1,250 @@
+---
+id: "day11"
+phase: "Day11"
+stage: "评估与整合"
+capability: "把模糊想法转成 AI 可执行任务"
+title: "上下文工程、任务拆解与 AI 协作"
+summary: "把模糊需求转成 AI 能稳定执行的工程任务，建立可复用的 prompt 资产与验证闭环。"
+capabilityGoal: "能设计一份 AI 协作 playbook，让 AI 输出跟随证据迭代，而不是靠感觉驱动。"
+verifiableOutput: "包含上下文包、任务切片、验证命令与 prompt 模板库的任务拆解模板。"
+mentalModel: "上下文工程是把任务变成可执行输入；验证闭环让输出跟随证据而非感觉。"
+walkthrough: "产品经理想让 AI 重构结算模块。不正确做法：直接把 PRD 贴给 AI 让它\"改一下\"。正确做法：先写上下文包（目标：拆分支付与退款逻辑；非目标：不改前端；相关文件：payment.ts、refund.service.ts；约束：保持现有接口签名；验收：现有单测 pass + 新单测覆盖拆分后逻辑）；再拆任务切片（Step1：读现状写出依赖图 → Step2：提议拆分方案 → Step3：改一个函数 → Step4：运行单测 → Step5：复盘差异）；每步产出证据后再进行下一步。"
+modules:
+  - id: "d11-m1"
+    title: "上下文包决定 AI 协作的边界与质量"
+    concept: "context"
+    idea: "给 AI 的上下文要明确目标、非目标、相关文件、代码约定、错误日志、用户约束和验收方式，而不是把问题堆给模型让它自行猜测。"
+    whyItMatters: "上下文不完整会导致 AI 误解方向；上下文过多（噪声）会稀释关键约束、浪费 token。精确的上下文是所有后续步骤的质量基线。"
+    engineerLens: "把上下文包当作函数签名——调用者（AI）只能根据已知参数做决定；缺失的参数不应靠猜测填充，而应触发拒答或追问。"
+    productionExample:
+      context: "某 SaaS 团队在代码库拆分任务中，工程师每次给 AI 的上下文只有\"帮我重构这个模块\"。"
+      whatTheyDid: "引入上下文包模板，强制包含 objective、non-goals、relevant files（精确列出 3-5 个）、constraints（接口签名不变）、acceptance（测试通过）和 verification（npm test && npm run build 输出截图）。"
+      outcome: "返工率从平均 2.8 轮降至 1.2 轮，单次 PR 审查时间缩短 40%。"
+    counterExample:
+      context: "某初创团队把整个仓库（350 个文件）打包进 context window，然后问 AI\"哪里可以优化\"。"
+      antiPattern: "没有目标边界、没有指定相关文件、没有验收标准——噪声完全淹没核心约束。"
+      consequence: "AI 输出建议散布在 12 个不相关模块，研发无法判断优先级，该轮协作完全无效。"
+    pitfalls:
+      - symptom: "AI 改动范围超出预期，触碰了不该改的模块"
+        fix: "在上下文包中明确 non-goals 和 forbidden files，并在 system prompt 中重申边界"
+      - symptom: "多轮对话后 AI 开始重复或遗忘之前约束"
+        fix: "每轮重新注入关键约束摘要，不依赖模型记忆多轮状态"
+  - id: "d11-m2"
+    title: "任务拆解降低返工与幻觉"
+    concept: "task-slicing"
+    idea: "大任务要拆成\"读现状 → 提方案 → 改一处 → 验证一处 → 复盘差异\"的循环切片，每个切片有独立验收标准和可运行命令。"
+    whyItMatters: "AI 在复杂目标上容易产生幻觉性自信——看起来完成了，但没有任何验证支撑。切片闭环让每步都有证据，问题在最小粒度被捕获，而不是在最后集中爆发。"
+    engineerLens: "确定依赖顺序：数据契约先于 UI 渲染，接口签名先于调用者，测试框架先于测试用例。切片不能让 AI 同时修改数据模型、UI 和测试，否则失败时无法定位问题来源。"
+    productionExample:
+      context: "某电商团队要将商品详情页 React 组件迁移到 App Router，共 23 个子组件、4 个数据层。"
+      whatTheyDid: "拆为 7 个切片（①分析现有数据流并输出图 → ②迁移 layout 层 → ③迁移数据获取 → ④迁移每组子组件 → ⑤E2E 截图对比 → ⑥性能指标对比 → ⑦回滚路径文档），每切片有 git checkpoint 和验收命令。"
+      outcome: "迁移在 4 天内完成，无线上事故；切片 ③ 失败后提前发现数据层缓存策略不兼容，避免了 production bug。"
+    counterExample:
+      context: "同类项目让 AI 一次性完成\"把所有组件迁移到 App Router\"。"
+      antiPattern: "无中间检查点，AI 生成了修改 14 个文件的 PR，混入了 5 处无关重构。"
+      consequence: "Code Review 无法进行，PR 被关闭，整个迁移重来。"
+    pitfalls:
+      - symptom: "切片太细导致 AI 每次都要重新读大量背景"
+        fix: "把不变背景提炼成项目级 context 文件（如 CLAUDE.md），切片上下文只包含当前步骤的变化增量"
+      - symptom: "切片验收命令失败但 AI 自行\"解释\"为已完成"
+        fix: "把验收命令写进 prompt 结尾并要求 AI 输出命令实际运行结果，而非判断\"应该可以通过\""
+  - id: "d11-m3"
+    title: "Prompt 资产版本化与团队复用"
+    concept: "constraints"
+    idea: "常用的开发、审查、测试、调研、复盘 prompt 应保存为项目资产（文件，而非聊天记录），带版本标记、适用条件和使用示例。"
+    whyItMatters: "团队成员各自维护不同版本的\"惯用 prompt\"，导致 AI 输出质量不稳定，新成员上手成本高。版本化资产让协作标准可传播、可更新、可审查。"
+    engineerLens: "把 prompt 模板当配置文件管理：存入 prompts/ 或 .claude/ 目录，连同 acceptance criteria 一起 commit；当某类任务失败 2 次以上时，对应模板必须更新后才能继续使用。"
+    productionExample:
+      context: "某 AI 产品团队 6 人，各自使用不同的 code review prompt，导致 review 粒度和重点差异极大。"
+      whatTheyDid: "建立 prompts/code-review.md（包含：目标、检查维度、输出格式、不做的事），同时建立 prompts/debug.md 和 prompts/test-gen.md，所有模板进入 git 并设置 changelog。"
+      outcome: "PR review 时间从平均 55 分钟降至 28 分钟；新成员第一周即可产出质量对齐的 review 意见。"
+    counterExample:
+      context: "团队把所有\"好用的 prompt\"存在个人聊天记录或 Notion 私有页面。"
+      antiPattern: "没有版本、没有适用场景说明、没有反例记录，离职员工带走了所有积累。"
+      consequence: "下一轮项目中，团队重新摸索相同的 prompt 结构，浪费约两周生产力。"
+    pitfalls:
+      - symptom: "模板在不同场景效果悬殊，不知道用哪个版本"
+        fix: "每个模板顶部标注 when-to-use（具体场景）和 when-NOT-to-use（明确边界），避免万能模板误用"
+      - symptom: "模板更新后团队成员仍在用旧版本"
+        fix: "在 CONTRIBUTING.md 中规定\"使用 prompts/ 目录版本\"，并在 CI 检查中提示新 prompt 已更新"
+  - id: "d11-m4"
+    title: "验证闭环替代感觉能用"
+    concept: "review"
+    idea: "AI 输出必须被测试、构建、截图、日志、数据 diff 或人工 checklist 验证，验证结果反哺下一轮上下文。感觉对了不等于对了。"
+    whyItMatters: "\"感觉能用\"是 vibe coding 最大的隐性风险——输出通过了目视检查，但未运行命令、未核对边界，线上才暴露问题。验证闭环把每次 AI 协作变成可重复的工程动作。"
+    engineerLens: "为每类 AI 任务预定义验证矩阵：代码改动（单测 + 构建 + lint）、内容生成（关键词覆盖 + 字数 + 格式校验）、配置变更（环境启动 + 健康检查）。失败证据要直接传入下一轮上下文，不仅仅是描述\"有个错误\"。"
+    productionExample:
+      context: "某 AI 写作工具每次生成 SEO 文章后只靠人工目视检查，发现线上文章格式错误率约 12%。"
+      whatTheyDid: "引入验证矩阵：① markdownlint 检查结构 → ② 自动检测 heading 层级 → ③ 关键词密度脚本 → ④ 最终人工验收 checklist（5 项，每项打钩）。验证结果自动写入 CI 评论。"
+      outcome: "格式错误率降至 0.8%；人工审查时间从 20 分钟降至 6 分钟（只做 checklist 确认）。"
+    counterExample:
+      context: "某后端团队让 AI 生成数据库迁移脚本，目视检查后直接推送到 staging。"
+      antiPattern: "没有运行 dry-run，没有检查回滚脚本，没有对比 schema diff。"
+      consequence: "迁移脚本在 staging 删除了正确表的外键约束，引发级联数据损坏，回滚耗时 3 小时。"
+    pitfalls:
+      - symptom: "验证步骤太繁琐，团队开始跳过"
+        fix: "把最关键的 3 个验证命令整合成一个 npm run ai-verify 脚本，降低执行摩擦"
+      - symptom: "失败信息只存在终端，下一轮 AI 无法感知"
+        fix: "验证失败时自动生成 verification-failure.md 并在下一轮上下文包中引用，让 AI 看到原始错误而非转述"
+decisionLayers:
+  - id: "l1"
+    name: "上下文边界"
+    question: "给 AI 的上下文包含什么、排除什么？"
+    choices:
+      - name: "精准注入"
+        description: "只提供与当前任务相关的目标、约束、文件和验收标准，排除无关历史和不相关模块。"
+        example: "上下文包含 payment.ts + refund.service.ts + 3 条约束，其余 300 个文件不注入。"
+      - name: "全量上下文"
+        description: "把所有可能相关的内容都注入，让模型自行判断。"
+        example: "把整个仓库或完整聊天历史传给模型。"
+  - id: "l2"
+    name: "任务切片粒度"
+    question: "每个切片的范围和验收如何定义？"
+    choices:
+      - name: "单关注点切片"
+        description: "每个切片只改一类事物，有独立的验收命令，产出可 commit 的 diff。"
+        example: "切片 1 只迁移数据获取层，验收：npm test src/data/ 通过。"
+      - name: "端到端一次完成"
+        description: "一个切片涵盖 UI、数据、测试和部署，AI 一次性完成。"
+        example: "\"帮我做这个功能\"不拆切片，直接要求完整 PR。"
+  - id: "l3"
+    name: "验证证据级别"
+    question: "怎样的验证才算充分？"
+    choices:
+      - name: "命令证据"
+        description: "运行真实命令（测试、构建、lint、截图），把输出作为证据保存并传入下一轮。"
+        example: "npm test 输出 22 passed 0 failed 截图 + build 日志。"
+      - name: "目视感觉"
+        description: "读代码或看页面，感觉正确就继续。"
+        example: "代码看起来没问题，应该能跑。"
+architecture:
+  type: "lifecycle"
+  summary: "AI 协作任务从上下文包出发，经任务切片、执行、验证到证据回流，形成可迭代的 AI 工程循环。"
+  conclusion: "上下文工程和验证闭环让 AI 输出跟随证据收敛，而不是靠感觉漂移；prompt 资产让循环可复用。"
+  nodes:
+    - id: "n1"
+      label: "任务意图与上下文包"
+      tone: "accent"
+    - id: "n2"
+      label: "任务切片规划"
+    - id: "n3"
+      label: "AI 执行单切片"
+      tone: "system"
+    - id: "n4"
+      label: "验证命令运行"
+      tone: "warning"
+    - id: "n5"
+      label: "证据收集与复盘"
+    - id: "n6"
+      label: "Prompt 资产更新"
+      tone: "success"
+  edges:
+    - from: "n1"
+      to: "n2"
+      relation: "primary"
+    - from: "n2"
+      to: "n3"
+      relation: "primary"
+    - from: "n3"
+      to: "n4"
+      relation: "primary"
+    - from: "n4"
+      to: "n5"
+      relation: "primary"
+    - from: "n5"
+      to: "n6"
+      relation: "primary"
+    - from: "n6"
+      to: "n1"
+      relation: "primary"
+      label: "下一轮任务"
+  groups: []
+questions:
+  - id: "d11-q1"
+    type: "single"
+    concept: "context"
+    weight: 30
+    prompt: "上下文包中最容易被忽略、但对 AI 输出质量影响最大的字段是哪个？"
+    scenario: "一个工程师给 AI 提供了目标和相关文件，但 AI 改动了不该改的模块。"
+    explanation: "non-goals（非目标）明确了边界，缺少非目标会让 AI 把边界模糊理解为可以自由发挥，这是最常见的返工来源之一。"
+    options:
+      - id: "a"
+        label: "non-goals（非目标与禁止修改的范围）"
+        correct: true
+      - id: "b"
+        label: "任务标题"
+        correct: false
+      - id: "c"
+        label: "相关文件数量"
+        correct: false
+  - id: "d11-q2"
+    type: "single"
+    concept: "task-slicing"
+    weight: 25
+    prompt: "任务切片时，以下哪种做法最符合\"单关注点切片\"原则？"
+    scenario: "团队要把支付模块从单体迁移到微服务，计划用 AI 辅助完成。"
+    explanation: "单关注点切片要求每个切片只改一类事物并有独立验收。①只迁移数据层接口、验收为单测通过，这完全符合原则。"
+    options:
+      - id: "a"
+        label: "切片 1：迁移数据层接口，验收：相关单测全部通过"
+        correct: true
+      - id: "b"
+        label: "切片 1：同时迁移数据层、UI 组件和部署脚本"
+        correct: false
+      - id: "c"
+        label: "不拆切片，让 AI 一次性完成整个迁移"
+        correct: false
+  - id: "d11-q3"
+    type: "single"
+    concept: "constraints"
+    weight: 20
+    prompt: "把 prompt 模板存入 git 仓库（如 prompts/ 目录）的核心工程价值是什么？"
+    explanation: "prompt 模板版本化的核心价值是让团队标准可审查、可传承、可随项目复盘更新。聊天记录无法审查、无法 diff，离职后即消失。"
+    options:
+      - id: "a"
+        label: "让模板可版本控制、可 code review、可随失败案例更新"
+        correct: true
+      - id: "b"
+        label: "让 AI 自动选择最合适的 prompt"
+        correct: false
+      - id: "c"
+        label: "减少模型 token 消耗"
+        correct: false
+  - id: "d11-q4"
+    type: "single"
+    concept: "review"
+    weight: 25
+    prompt: "以下哪种验证行为能真正形成\"验证闭环\"？"
+    scenario: "AI 修改了一个后端 API handler，你需要确认改动正确。"
+    explanation: "验证闭环要求运行真实命令并把结果作为证据。只有运行单测+日志+并把输出传回才能形成闭环；目视检查不是证据。"
+    options:
+      - id: "a"
+        label: "运行单测和构建，把输出日志截图附入下一轮上下文"
+        correct: true
+      - id: "b"
+        label: "读 diff 觉得逻辑没问题就 merge"
+        correct: false
+      - id: "c"
+        label: "让 AI 自己判断改动是否正确"
+        correct: false
+rubric:
+  - id: "r1"
+    criterion: "任务拆解模板包含 objective、non-goals、relevant files、constraints、verification commands 六个字段，且每个字段有具体内容而非占位符"
+  - id: "r2"
+    criterion: "至少有一个可运行的 verification command（如 npm test 或 npm run build），并记录了期望输出"
+  - id: "r3"
+    criterion: "有一份可复用的 prompt 模板，注明适用场景和使用示例"
+references:
+  - label: "OpenAI Prompt Engineering Guide"
+    url: "https://platform.openai.com/docs/guides/prompt-engineering"
+    note: "官方 prompt 工程指南，涵盖上下文结构、few-shot 示例和约束设计原则"
+  - label: "OpenAI Agents SDK"
+    url: "https://platform.openai.com/docs/guides/agents"
+    note: "Agent 任务分解与工具调用的官方最佳实践，直接关联任务切片设计"
+  - label: "GitHub Pull Request Collaboration Docs"
+    url: "https://docs.github.com/en/pull-requests/collaborating-with-pull-requests"
+    note: "PR review 与协作工作流规范，适用于把 AI 协作输出纳入团队审查流程"
+---
+
+# 笔记
+占位
