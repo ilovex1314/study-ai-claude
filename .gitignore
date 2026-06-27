@@ -1,0 +1,11 @@
+node_modules/
+dist/
+*.tsbuildinfo
+*.log
+.DS_Store
+
+# generated content (built in prebuild/CI, never committed)
+**/lessons.generated.ts
+
+# superpowers runtime artifacts
+.superpowers/
