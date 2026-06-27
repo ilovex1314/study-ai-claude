@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { lessons } from "../content/lessons";
 import type { LearnerStateAdapter } from "../learner-state/adapter";
 import { buildCapabilityArchive } from "../practice/archive";
 
 export function CapabilityArchive({ adapter }: { adapter: LearnerStateAdapter }) {
+  const [open, setOpen] = useState(false);
   const rows = buildCapabilityArchive([...lessons], adapter);
+  const delivered = rows.filter((r) => r.status === "可独立交付").length;
 
   const exportArchive = () => {
     const json = adapter.exportArchive(lessons.map((l) => l.id));
@@ -19,27 +22,33 @@ export function CapabilityArchive({ adapter }: { adapter: LearnerStateAdapter })
   return (
     <section className="capability-archive" aria-label="能力档案">
       <div className="archive-head">
-        <h2>能力档案</h2>
-        <button type="button" className="export-archive" onClick={exportArchive}>导出能力档案</button>
+        <button type="button" className="archive-toggle" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
+          <span className={`archive-caret${open ? " open" : ""}`} aria-hidden="true">▸</span>
+          <h2>能力档案</h2>
+          <span className="archive-summary">{delivered}/{rows.length} 可独立交付</span>
+        </button>
+        {open ? <button type="button" className="export-archive" onClick={exportArchive}>导出能力档案</button> : null}
       </div>
-      <div className="archive-scroll">
-        <table>
-          <thead>
-            <tr><th>能力</th><th>测验最佳</th><th>有产出</th><th>Rubric</th><th>状态</th></tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.lessonId}>
-                <td>{r.capability}</td>
-                <td>{r.quizBest}</td>
-                <td>{r.hasEvidence ? "达成" : "—"}</td>
-                <td>{Math.round(r.rubricRatio * 100)}%</td>
-                <td><span className="archive-status" data-status={r.status}>{r.status}</span></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {open ? (
+        <div className="archive-scroll">
+          <table>
+            <thead>
+              <tr><th>能力</th><th>测验最佳</th><th>有产出</th><th>Rubric</th><th>状态</th></tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.lessonId}>
+                  <td>{r.capability}</td>
+                  <td>{r.quizBest}</td>
+                  <td>{r.hasEvidence ? "达成" : "—"}</td>
+                  <td>{Math.round(r.rubricRatio * 100)}%</td>
+                  <td><span className="archive-status" data-status={r.status}>{r.status}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
     </section>
   );
 }

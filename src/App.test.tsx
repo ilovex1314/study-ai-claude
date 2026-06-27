@@ -9,7 +9,7 @@ const renderAt = (path: string) => render(<MemoryRouter initialEntries={[path]}>
 
 it("renders the first lesson title and its production/counter example contrast", () => {
   renderAt(`/${lessons[0].id}/concepts`);
-  expect(screen.getByText(lessons[0].title, { exact: false })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { level: 1, name: lessons[0].title })).toBeInTheDocument();
   expect(screen.getAllByText("生产案例").length).toBeGreaterThan(0);
   expect(screen.getAllByText("反例").length).toBeGreaterThan(0);
 });

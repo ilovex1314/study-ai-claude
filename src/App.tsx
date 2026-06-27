@@ -6,6 +6,7 @@ import type { Review } from "./assessment/score";
 import { LocalStorageAdapter } from "./learner-state/localStorageAdapter";
 import { Hero } from "./ui/Hero";
 import { CurriculumNav } from "./ui/CurriculumNav";
+import { MobileDayNav } from "./ui/MobileDayNav";
 import { SectionRail, SECTIONS } from "./ui/SectionRail";
 import type { SectionKey } from "./ui/SectionRail";
 import { ConceptsPanel } from "./ui/ConceptsPanel";
@@ -26,7 +27,6 @@ function LessonPage() {
   const lesson = useMemo(() => lessons.find((l) => l.id === dayId), [dayId]);
   const [review, setReview] = useState<Review | null>(null);
   const [active, setActive] = useState<string>(section ?? "series");
-  const [navOpen, setNavOpen] = useState(false);
 
   // On day change, jump to the requested section (or top), without smooth animation.
   useEffect(() => {
@@ -71,12 +71,9 @@ function LessonPage() {
 
   return (
     <div className="app-shell">
-      <aside className={`app-sidebar${navOpen ? " open" : ""}`}>
-        <button type="button" className="nav-toggle" onClick={() => setNavOpen((v) => !v)} aria-expanded={navOpen}>
-          课程目录 · {lesson.phase}
-        </button>
+      <aside className="app-sidebar">
         <div className="app-sidebar-scroll">
-          <CurriculumNav onPick={() => setNavOpen(false)} />
+          <CurriculumNav />
         </div>
       </aside>
       <main className="lesson-page">
@@ -100,6 +97,7 @@ function LessonPage() {
           <CapabilityArchive adapter={adapter} />
         </section>
       </main>
+      <MobileDayNav />
     </div>
   );
 }

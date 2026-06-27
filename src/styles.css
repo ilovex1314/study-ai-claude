@@ -129,24 +129,24 @@ button { font-family: inherit; }
 /* ── Section rail (sticky, scroll-spy) ─────────────────────── */
 .section-rail {
   position: sticky; top: 0; z-index: 20;
-  display: flex; gap: 0.4rem;
-  height: var(--rail-h); align-items: center;
-  padding: 0 0.25rem; margin-bottom: 0.5rem;
-  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  display: flex; gap: 1.5rem;
+  height: var(--rail-h); align-items: stretch;
+  padding: 0 0.25rem; margin-bottom: 0.75rem;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
   overflow-x: auto;
 }
 .section-rail button {
   flex: 0 0 auto;
-  padding: 0.35rem 0.9rem; border-radius: 999px;
-  border: 1px solid transparent; background: transparent;
-  color: var(--muted); font-size: 0.86rem; font-weight: 600; cursor: pointer;
-  transition: background 0.18s var(--ease), color 0.18s var(--ease);
+  padding: 0 0.1rem; border: 0;
+  border-bottom: 2px solid transparent; background: transparent;
+  color: var(--muted); font-size: 0.92rem; font-weight: 600; cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.18s var(--ease), border-color 0.18s var(--ease);
 }
-.section-rail button:hover { color: var(--ink); background: var(--surface-2); }
-.section-rail button.active { color: #fff; background: var(--accent); }
-@media (prefers-color-scheme: dark) { .section-rail button.active { color: #0d1117; } }
+.section-rail button:hover { color: var(--ink); }
+.section-rail button.active { color: var(--accent-ink); border-bottom-color: var(--accent); }
 
 /* ── Hero ──────────────────────────────────────────────────── */
 .hero { padding: 0.5rem 0 0.25rem; }
@@ -250,6 +250,11 @@ button { font-family: inherit; }
 
 .capability-archive { margin-top: 2rem; }
 .archive-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.archive-toggle { display: flex; align-items: center; gap: 0.6rem; border: 0; background: transparent; padding: 0; cursor: pointer; color: var(--ink); }
+.archive-toggle h2 { margin: 0; }
+.archive-caret { color: var(--muted); transition: transform 0.18s var(--ease); display: inline-block; }
+.archive-caret.open { transform: rotate(90deg); }
+.archive-summary { font-size: 0.78rem; font-weight: 600; color: var(--accent-ink); background: var(--accent-wash); padding: 0.1rem 0.6rem; border-radius: 999px; }
 .export-archive {
   padding: 0.5rem 1.05rem; border: 1px solid var(--accent);
   border-radius: var(--r-control); background: transparent; color: var(--accent-ink);
@@ -303,22 +308,44 @@ button { font-family: inherit; }
   transform: translate(calc(cos(var(--angle)) * 120px), calc(sin(var(--angle)) * 100px));
 }
 
+/* ── Mobile day carousel (bottom, collapsible) — hidden on desktop ── */
+.mobile-day-nav { display: none; }
+
 /* ── Responsive / H5 ───────────────────────────────────────── */
 @media (max-width: 860px) {
-  .app-shell { grid-template-columns: 1fr; gap: 0.75rem; padding: 0.75rem 1rem 4rem; }
-  .app-sidebar { position: static; }
-  .nav-toggle {
-    display: block; width: 100%; text-align: left;
-    padding: 0.7rem 0.9rem; border: 1px solid var(--line); border-radius: var(--r-control);
-    background: var(--surface); color: var(--ink); font-weight: 600; cursor: pointer;
-  }
-  .app-sidebar-scroll { max-height: 0; overflow: hidden; transition: max-height 0.25s var(--ease); }
-  .app-sidebar.open .app-sidebar-scroll { max-height: 60vh; overflow-y: auto; margin-top: 0.5rem; }
+  .app-shell { grid-template-columns: 1fr; gap: 0.5rem; padding: 0.5rem 1rem 88px; }
+  .app-sidebar { display: none; }
   .example-contrast { grid-template-columns: 1fr; }
   .pitfall { grid-template-columns: 1fr; }
   .hero-title { font-size: 1.5rem; }
+
+  .mobile-day-nav {
+    display: flex; align-items: stretch; gap: 8px;
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+    padding: 8px;
+    background: color-mix(in srgb, var(--bg) 94%, transparent);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--line);
+  }
+  .mday-toggle {
+    flex: 0 0 auto; width: 42px;
+    border: 1px solid var(--line-strong); border-radius: var(--r-control);
+    background: var(--surface); color: var(--accent-ink);
+    font-size: 22px; line-height: 1; cursor: pointer;
+  }
+  .mday-track { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x proximity; }
+  .mobile-day-nav:not(.open) .mday-track { display: none; }
+  .mday-chip {
+    flex: 0 0 auto; display: flex; flex-direction: column; gap: 2px;
+    min-width: 132px; max-width: 156px; padding: 8px 11px;
+    border: 1px solid var(--line); border-radius: var(--r-control);
+    background: var(--surface); color: var(--ink); text-decoration: none;
+    scroll-snap-align: start;
+  }
+  .mday-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .mday-phase { font-size: 0.72rem; font-weight: 700; opacity: 0.85; }
+  .mday-title { font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 }
-@media (min-width: 861px) { .nav-toggle { display: none; } }
 
 /* ── Reduced motion ────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
