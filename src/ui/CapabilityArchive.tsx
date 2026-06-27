@@ -22,22 +22,24 @@ export function CapabilityArchive({ adapter }: { adapter: LearnerStateAdapter })
         <h2>能力档案</h2>
         <button type="button" className="export-archive" onClick={exportArchive}>导出能力档案</button>
       </div>
-      <table>
-        <thead>
-          <tr><th>能力</th><th>测验最佳</th><th>有产出</th><th>Rubric</th><th>状态</th></tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr key={r.lessonId}>
-              <td>{r.capability}</td>
-              <td>{r.quizBest}</td>
-              <td>{r.hasEvidence ? "✓" : "—"}</td>
-              <td>{Math.round(r.rubricRatio * 100)}%</td>
-              <td><span className="archive-status" data-status={r.status}>{r.status}</span></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="archive-scroll">
+        <table>
+          <thead>
+            <tr><th>能力</th><th>测验最佳</th><th>有产出</th><th>Rubric</th><th>状态</th></tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.lessonId}>
+                <td>{r.capability}</td>
+                <td>{r.quizBest}</td>
+                <td>{r.hasEvidence ? "达成" : "—"}</td>
+                <td>{Math.round(r.rubricRatio * 100)}%</td>
+                <td><span className="archive-status" data-status={r.status}>{r.status}</span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }

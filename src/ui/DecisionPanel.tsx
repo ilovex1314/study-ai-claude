@@ -2,7 +2,7 @@ import type { Lesson } from "../content/schema";
 
 export function DecisionPanel({ lesson }: { lesson: Lesson }) {
   return (
-    <section className="decision-panel" id="decision" aria-label="决策分层">
+    <section className="decision-panel" aria-label="决策分层">
       <h2>决策分层</h2>
       {lesson.decisionLayers.map((layer) => (
         <div key={layer.id} className="decision-layer">

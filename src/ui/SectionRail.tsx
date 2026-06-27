@@ -1,6 +1,6 @@
-import { NavLink } from "react-router-dom";
+export type SectionKey = "series" | "concepts" | "decision" | "practice" | "review";
 
-const SECTIONS: { key: string; label: string }[] = [
+export const SECTIONS: { key: SectionKey; label: string }[] = [
   { key: "series", label: "概览" },
   { key: "concepts", label: "概念" },
   { key: "decision", label: "决策" },
@@ -8,13 +8,19 @@ const SECTIONS: { key: string; label: string }[] = [
   { key: "review", label: "复盘" }
 ];
 
-export function SectionRail({ dayId, active }: { dayId: string; active: string }) {
+export function SectionRail({ active, onNavigate }: { active: string; onNavigate: (key: SectionKey) => void }) {
   return (
     <nav className="section-rail" aria-label="章节导航">
       {SECTIONS.map((s) => (
-        <NavLink key={s.key} to={`/${dayId}/${s.key}`} className={s.key === active ? "active" : undefined}>
+        <button
+          key={s.key}
+          type="button"
+          className={s.key === active ? "active" : undefined}
+          aria-current={s.key === active ? "true" : undefined}
+          onClick={() => onNavigate(s.key)}
+        >
           {s.label}
-        </NavLink>
+        </button>
       ))}
     </nav>
   );

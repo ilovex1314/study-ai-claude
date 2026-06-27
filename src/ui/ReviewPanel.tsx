@@ -6,7 +6,7 @@ export function ReviewPanel({ lesson, adapter, review }: { lesson: Lesson; adapt
   const history = adapter.loadHistory(lesson.id);
 
   return (
-    <section className="review-panel" id="review" aria-label="复盘">
+    <section className="review-panel" aria-label="复盘">
       <h2>复盘</h2>
       {review ? (
         <div className="review-result">

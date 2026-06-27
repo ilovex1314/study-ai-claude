@@ -33,7 +33,7 @@ export function QuizPanel({ lesson, adapter, onReview }: { lesson: Lesson; adapt
   const answered = lesson.questions.filter((q) => attempt.answers[q.id] !== undefined).length;
 
   return (
-    <section className="quiz-panel" id="practice" aria-label="加权测验">
+    <section className="quiz-panel" aria-label="加权测验">
       <h2>加权测验（满分 100）</h2>
       <ol className="question-list">
         {lesson.questions.map((q, i) => (

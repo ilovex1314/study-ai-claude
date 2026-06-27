@@ -22,7 +22,7 @@ export function PracticePanel({ lesson, adapter }: { lesson: Lesson; adapter: Le
   };
 
   return (
-    <section className="practice-panel" id="practice-output" aria-label="练习与自评">
+    <section className="practice-panel" aria-label="练习与自评">
       <h2>动手练习</h2>
       <p className="practice-prompt"><span className="tag">可验证产出</span>{lesson.verifiableOutput}</p>
       <label className="practice-label" htmlFor="practice-evidence">练习产出</label>
