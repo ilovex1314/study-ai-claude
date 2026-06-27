@@ -24,15 +24,21 @@
     <meta property="og:title" content="study-ai-claude · happyboy 的 AI 学习项目" />
     <meta property="og:description" content="20 天本地优先的 AI 工程学习工作台：深内容、关系正确的架构图、加权测验与可验证产出闭环。" />
     <meta property="og:image" content="https://study-ai-claude.pages.dev/og-image.png" />
+    <meta property="og:image:secure_url" content="https://study-ai-claude.pages.dev/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <!-- 方形缩略图（微信聊天卡片偏好方形小图） -->
+    <meta property="og:image" content="https://study-ai-claude.pages.dev/wechat-thumb.png" />
+    <meta property="og:image:width" content="600" />
+    <meta property="og:image:height" content="600" />
     <meta property="og:url" content="https://study-ai-claude.pages.dev/" />
     <meta property="og:locale" content="zh_CN" />
 
     <!-- 微信分享常读的 itemprop（部分场景） -->
     <meta itemprop="name" content="study-ai-claude · happyboy 的 AI 学习项目" />
     <meta itemprop="description" content="20 天本地优先的 AI 工程学习工作台，含可验证产出闭环。" />
-    <meta itemprop="image" content="https://study-ai-claude.pages.dev/og-image.png" />
+    <meta itemprop="image" content="https://study-ai-claude.pages.dev/wechat-thumb.png" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -62,6 +68,9 @@
     </script>
   </head>
   <body>
+    <!-- 不执行 JS 的爬虫（微信/百度）能直接读到的缩略图兜底 -->
+    <img src="/wechat-thumb.png" alt="study-ai-claude · happyboy 的 AI 学习项目" width="600" height="600"
+         style="position:absolute;left:-9999px;top:0;width:1px;height:1px;opacity:0;pointer-events:none" aria-hidden="true" />
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600" role="img" aria-label="study-ai-claude">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1d4ed8"/>
+      <stop offset="1" stop-color="#0d2452"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="600" fill="url(#bg)"/>
+  <!-- node graph -->
+  <g transform="translate(300,232)">
+    <g stroke="#9dbcff" stroke-width="6">
+      <line x1="0" y1="-92" x2="-92" y2="56"/>
+      <line x1="0" y1="-92" x2="92" y2="56"/>
+      <line x1="-92" y1="56" x2="92" y2="56"/>
+      <line x1="0" y1="-92" x2="0" y2="56"/>
+    </g>
+    <g fill="#ffffff">
+      <circle cx="0" cy="-92" r="20"/>
+      <circle cx="-92" cy="56" r="20"/>
+      <circle cx="92" cy="56" r="20"/>
+      <circle cx="0" cy="56" r="20"/>
+    </g>
+  </g>
+  <text x="300" y="430" text-anchor="middle" font-family="-apple-system, 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif" font-size="56" font-weight="800" fill="#ffffff">AI 学习项目</text>
+  <text x="300" y="486" text-anchor="middle" font-family="-apple-system, 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif" font-size="28" fill="#9dbcff" letter-spacing="1">study-ai-claude</text>
+  <text x="300" y="534" text-anchor="middle" font-family="-apple-system, 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif" font-size="22" fill="#7e93c4">happyboy · 20 天 AI 工程</text>
+</svg>
