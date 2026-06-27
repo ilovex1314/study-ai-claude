@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import App from "./App";
 import { lessons } from "./content/lessons";
@@ -17,4 +17,12 @@ it("renders the first lesson title and its production/counter example contrast",
 it("shows each question's weight beside it", () => {
   renderAt(`/${lessons[0].id}/practice`);
   expect(screen.getByText(/本题 \d+ 分/)).toBeInTheDocument();
+});
+
+it("saves practice evidence text to the learner-state adapter", () => {
+  renderAt(`/${lessons[0].id}/practice`);
+  const box = screen.getByLabelText("练习产出");
+  fireEvent.change(box, { target: { value: "我的边界判断" } });
+  fireEvent.blur(box);
+  expect(localStorage.getItem(`study-ai-claude.${lessons[0].id}.practiceEvidence`)).toMatch(/我的边界判断/);
 });

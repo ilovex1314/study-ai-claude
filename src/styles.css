@@ -163,3 +163,19 @@ body { margin: 0; font-family: system-ui, sans-serif; color: var(--ink); }
 
 .review-score { font-size: 1.5rem; }
 .review-score strong { color: var(--accent); }
+
+/* ── Practice, rubric, capability archive ──────────────────── */
+.practice-prompt { background: var(--surface-2); border-radius: 8px; padding: 0.6rem 0.85rem; }
+.practice-label { display: block; font-weight: 600; margin: 0.75rem 0 0.35rem; }
+.practice-textarea { width: 100%; min-height: 140px; padding: 0.75rem; border: 1px solid var(--line); border-radius: 8px; font: inherit; resize: vertical; box-sizing: border-box; }
+.rubric-list { list-style: none; margin: 0.5rem 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+.rubric-list label { display: flex; gap: 0.5rem; align-items: flex-start; font-size: 0.9rem; cursor: pointer; }
+
+.capability-archive { margin-top: 2rem; }
+.archive-head { display: flex; justify-content: space-between; align-items: center; }
+.export-archive { padding: 0.45rem 1rem; border: 1px solid var(--accent); border-radius: 8px; background: var(--surface); color: var(--accent); cursor: pointer; }
+.capability-archive table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; font-size: 0.88rem; }
+.capability-archive th, .capability-archive td { text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--line); }
+.archive-status { font-size: 0.78rem; padding: 0.1rem 0.5rem; border-radius: 999px; background: var(--surface-2); }
+.archive-status[data-status="可独立交付"] { background: #effaf4; color: var(--good); }
+.archive-status[data-status="练习"] { background: #eef3ff; color: var(--accent); }

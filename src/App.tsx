@@ -12,6 +12,8 @@ import { DecisionPanel } from "./ui/DecisionPanel";
 import { ArchitectureDiagram } from "./ui/ArchitectureDiagram";
 import { QuizPanel } from "./ui/QuizPanel";
 import { ReviewPanel } from "./ui/ReviewPanel";
+import { PracticePanel } from "./ui/PracticePanel";
+import { CapabilityArchive } from "./ui/CapabilityArchive";
 
 const adapter = new LocalStorageAdapter();
 
@@ -36,7 +38,9 @@ function LessonPage() {
         <ConceptsPanel lesson={lesson} />
         <DecisionPanel lesson={lesson} />
         <QuizPanel lesson={lesson} adapter={adapter} onReview={setReview} />
+        <PracticePanel lesson={lesson} adapter={adapter} />
         <ReviewPanel lesson={lesson} adapter={adapter} review={review} />
+        <CapabilityArchive adapter={adapter} />
       </main>
     </div>
   );
